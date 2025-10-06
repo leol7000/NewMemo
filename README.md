@@ -132,3 +132,4 @@ flymemo/
 3. YouTube视频需要有可用的脚本才能生成总结
 4. 建议使用现代浏览器以获得最佳体验
 # Trigger rebuild
+# Trigger rebuild with npm install fix
