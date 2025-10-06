@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MemoCard, ChatMessage, SummarizeRequest, ChatRequest, Collection, CollectionMemo, CreateCollectionRequest, AddMemoToCollectionRequest, GenerateLanguageResponse, Language } from '../shared/types';
+import { MemoCard, ChatMessage, SummarizeRequest, ChatRequest, Collection, CollectionMemo, CreateCollectionRequest, AddMemoToCollectionRequest, GenerateLanguageResponse, Language, Note, NoteCard, CreateNoteRequest, UpdateNoteRequest, NoteChatRequest, NoteChatResponse } from '../shared/types';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
@@ -176,6 +176,49 @@ export const collectionApi = {
     const response = await api.get(`/collections/${collectionId}/chat`);
     return response.data.data;
   },
+};
+
+export const noteApi = {
+  getAllNotes: async (): Promise<NoteCard[]> => {
+    const response = await api.get('/notes');
+    return response.data.data;
+  },
+
+  getNote: async (id: string): Promise<Note> => {
+    const response = await api.get(`/notes/${id}`);
+    return response.data.data;
+  },
+
+  createNote: async (data: CreateNoteRequest): Promise<Note> => {
+    const response = await api.post('/notes', data);
+    return response.data.data;
+  },
+
+  updateNote: async (id: string, data: UpdateNoteRequest): Promise<Note> => {
+    const response = await api.put(`/notes/${id}`, data);
+    return response.data.data;
+  },
+
+  deleteNote: async (id: string): Promise<void> => {
+    await api.delete(`/notes/${id}`);
+  },
+
+  summarizeNote: async (id: string): Promise<Note> => {
+    const response = await api.post(`/notes/${id}/summarize`);
+    return response.data.data;
+  },
+
+  getChatMessages: async (noteId: string): Promise<ChatMessage[]> => {
+    const response = await api.get(`/notes/${noteId}/chat`);
+    return response.data.data;
+  },
+
+  chatWithNote: async (data: NoteChatRequest): Promise<ChatMessage[]> => {
+    const response = await api.post(`/notes/${data.noteId}/chat`, {
+      message: data.message
+    });
+    return response.data.data;
+  }
 };
 
 export default api;

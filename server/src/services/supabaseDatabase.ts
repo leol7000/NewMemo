@@ -431,6 +431,183 @@ export class SupabaseDatabase {
     }
   }
 
+  // Notes CRUD operations
+  async getAllNotes(userId?: string): Promise<any[]> {
+    try {
+      let query = supabase
+        .from('notes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching notes:', error);
+        throw error;
+      }
+
+      return data?.map(this.mapNoteResult) || [];
+    } catch (error) {
+      console.error('getAllNotes error:', error);
+      throw error;
+    }
+  }
+
+  async getNote(id: string): Promise<any | null> {
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return null;
+        }
+        console.error('Error fetching note:', error);
+        throw error;
+      }
+
+      return data ? this.mapNoteResult(data) : null;
+    } catch (error) {
+      console.error('getNote error:', error);
+      throw error;
+    }
+  }
+
+  async createNote(note: { id: string; title: string; content: string; status?: string }, userId?: string): Promise<any> {
+    try {
+      const noteData = {
+        id: note.id,
+        title: note.title,
+        content: note.content,
+        status: note.status || 'draft',
+        user_id: userId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('notes')
+        .insert([noteData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating note:', error);
+        throw error;
+      }
+
+      return this.mapNoteResult(data);
+    } catch (error) {
+      console.error('createNote error:', error);
+      throw error;
+    }
+  }
+
+  async updateNote(noteId: string, updates: any): Promise<any> {
+    try {
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+
+      if (updates.title !== undefined) updateData.title = updates.title;
+      if (updates.content !== undefined) updateData.content = updates.content;
+      if (updates.summary !== undefined) updateData.summary = updates.summary;
+      if (updates.oneLineSummary !== undefined) updateData.one_line_summary = updates.oneLineSummary;
+      if (updates.keyPoints !== undefined) updateData.key_points = JSON.stringify(updates.keyPoints);
+      if (updates.status !== undefined) updateData.status = updates.status;
+
+      const { data, error } = await supabase
+        .from('notes')
+        .update(updateData)
+        .eq('id', noteId)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating note:', error);
+        throw error;
+      }
+
+      return this.mapNoteResult(data);
+    } catch (error) {
+      console.error('updateNote error:', error);
+      throw error;
+    }
+  }
+
+  async deleteNote(noteId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .delete()
+        .eq('id', noteId);
+
+      if (error) {
+        console.error('Error deleting note:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('deleteNote error:', error);
+      throw error;
+    }
+  }
+
+  // Note chat operations
+  async getNoteChatMessages(noteId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('note_chat_messages')
+        .select('*')
+        .eq('note_id', noteId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching note chat messages:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('getNoteChatMessages error:', error);
+      throw error;
+    }
+  }
+
+  async createNoteChatMessage(message: { id: string; noteId: string; role: string; content: string }): Promise<any> {
+    try {
+      const messageData = {
+        id: message.id,
+        note_id: message.noteId,
+        role: message.role,
+        content: message.content,
+        created_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('note_chat_messages')
+        .insert([messageData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating note chat message:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('createNoteChatMessage error:', error);
+      throw error;
+    }
+  }
+
   // Helper methods
   private mapMemoResult(result: any): MemoCard {
     return {
@@ -456,6 +633,20 @@ export class SupabaseDatabase {
       description: result.description,
       color: result.color,
       memo_count: result.memos?.[0]?.count || 0,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at
+    };
+  }
+
+  private mapNoteResult(result: any): any {
+    return {
+      id: result.id,
+      title: result.title,
+      content: result.content,
+      summary: result.summary,
+      oneLineSummary: result.one_line_summary,
+      keyPoints: result.key_points ? JSON.parse(result.key_points) : undefined,
+      status: result.status,
       createdAt: result.created_at,
       updatedAt: result.updated_at
     };

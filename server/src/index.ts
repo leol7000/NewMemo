@@ -9,6 +9,7 @@ import { summarizeRouter } from './routes/summarize';
 import { chatRouter } from './routes/chat';
 import { memosRouter } from './routes/memos';
 import collectionsRouter from './routes/collections';
+import { notesRouter } from './routes/notes';
 import { authenticateToken, optionalAuth } from './middleware/auth';
 
 dotenv.config();
@@ -79,6 +80,7 @@ app.use('/api/summarize', optionalAuth, summarizeRouter);
 app.use('/api/chat', optionalAuth, chatRouter);
 app.use('/api/memos', optionalAuth, memosRouter);
 app.use('/api/collections', optionalAuth, collectionsRouter);
+app.use('/api/notes', optionalAuth, notesRouter);
 
 // 认证相关路由
 app.get('/api/auth/profile', authenticateToken, (req: any, res) => {

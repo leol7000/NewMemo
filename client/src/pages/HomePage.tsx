@@ -107,14 +107,22 @@ const HomePage: React.FC = () => {
         <div className="text-center mb-16">
           {isAuthenticated ? (
             <>
-              <button
-                onClick={() => navigate('/memos')}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg text-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-              >
-                View My Memos
-              </button>
+              <div className="flex justify-center gap-4 mb-6">
+                <button
+                  onClick={() => navigate('/memos')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  View My Memos
+                </button>
+                <button
+                  onClick={() => navigate('/notes')}
+                  className="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                >
+                  My Notes
+                </button>
+              </div>
               <p className="text-gray-500 mt-4">
-                Welcome back, {user?.name}! Manage your AI-powered content summaries
+                Welcome back, {user?.name}! Manage your AI-powered content summaries and personal notes
               </p>
             </>
           ) : (

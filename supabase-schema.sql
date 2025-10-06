@@ -6,6 +6,8 @@ ALTER TABLE IF EXISTS memos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS collections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS memo_collections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS chat_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS notes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE IF EXISTS note_chat_messages ENABLE ROW LEVEL SECURITY;
 
 -- Create memos table
 CREATE TABLE IF NOT EXISTS memos (
@@ -53,6 +55,29 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Create notes table
+CREATE TABLE IF NOT EXISTS notes (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  summary TEXT,
+  one_line_summary TEXT,
+  key_points TEXT, -- JSON string
+  status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'completed')),
+  user_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create note_chat_messages table
+CREATE TABLE IF NOT EXISTS note_chat_messages (
+  id TEXT PRIMARY KEY,
+  note_id TEXT REFERENCES notes(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('user', 'assistant')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_memos_user_id ON memos(user_id);
 CREATE INDEX IF NOT EXISTS idx_memos_created_at ON memos(created_at);
@@ -61,6 +86,10 @@ CREATE INDEX IF NOT EXISTS idx_memo_collections_memo_id ON memo_collections(memo
 CREATE INDEX IF NOT EXISTS idx_memo_collections_collection_id ON memo_collections(collection_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_memo_id ON chat_messages(memo_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_notes_user_id ON notes(user_id);
+CREATE INDEX IF NOT EXISTS idx_notes_created_at ON notes(created_at);
+CREATE INDEX IF NOT EXISTS idx_note_chat_messages_note_id ON note_chat_messages(note_id);
+CREATE INDEX IF NOT EXISTS idx_note_chat_messages_created_at ON note_chat_messages(created_at);
 
 -- Row Level Security Policies
 -- Users can only see their own memos
@@ -136,6 +165,38 @@ CREATE POLICY "Users can insert own chat messages" ON chat_messages
     )
   );
 
+-- Users can only see their own notes
+CREATE POLICY "Users can view own notes" ON notes
+  FOR SELECT USING (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can insert own notes" ON notes
+  FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can update own notes" ON notes
+  FOR UPDATE USING (auth.uid()::text = user_id);
+
+CREATE POLICY "Users can delete own notes" ON notes
+  FOR DELETE USING (auth.uid()::text = user_id);
+
+-- Users can only see note chat messages for their own notes
+CREATE POLICY "Users can view own note chat messages" ON note_chat_messages
+  FOR SELECT USING (
+    EXISTS (
+      SELECT 1 FROM notes 
+      WHERE notes.id = note_chat_messages.note_id 
+      AND notes.user_id = auth.uid()::text
+    )
+  );
+
+CREATE POLICY "Users can insert own note chat messages" ON note_chat_messages
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM notes 
+      WHERE notes.id = note_chat_messages.note_id 
+      AND notes.user_id = auth.uid()::text
+    )
+  );
+
 -- Function to automatically update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -150,4 +211,7 @@ CREATE TRIGGER update_memos_updated_at BEFORE UPDATE ON memos
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_collections_updated_at BEFORE UPDATE ON collections
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_notes_updated_at BEFORE UPDATE ON notes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

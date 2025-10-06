@@ -4,11 +4,15 @@ import { Auth0Provider } from '@auth0/auth0-react';
 import { auth0Config, checkAuth0Config } from './config/auth0';
 import { AuthProvider } from './contexts/AuthContext';
 import { MemoProvider } from './contexts/MemoContext';
+import { NotesProvider } from './contexts/NotesContext';
 import HomePage from './pages/HomePage';
 import MemoListPage from './pages/MemoListPage';
 import MemoDetailPage from './pages/MemoDetailPage';
 import CollectionsPage from './pages/CollectionsPage';
 import CollectionDetailPage from './pages/CollectionDetailPage';
+import NotesListPage from './pages/NotesListPage';
+import NoteDetailPage from './pages/NoteDetailPage';
+import NewNotePage from './pages/NewNotePage';
 import LoginPage from './pages/LoginPage';
 import AuthDebug from './components/AuthDebug';
 import AuthTest from './components/AuthTest';
@@ -45,18 +49,23 @@ function App() {
     >
       <AuthProvider>
         <MemoProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/memos" element={<MemoListPage />} />
-              <Route path="/memo/:id" element={<MemoDetailPage />} />
-              <Route path="/collections" element={<CollectionsPage />} />
-              <Route path="/collections/:id" element={<CollectionDetailPage />} />
-              <Route path="/debug" element={<AuthDebug />} />
-              <Route path="/auth-test" element={<AuthTest />} />
-            </Routes>
-          </Router>
+          <NotesProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/memos" element={<MemoListPage />} />
+                <Route path="/memo/:id" element={<MemoDetailPage />} />
+                <Route path="/collections" element={<CollectionsPage />} />
+                <Route path="/collections/:id" element={<CollectionDetailPage />} />
+                <Route path="/notes" element={<NotesListPage />} />
+                <Route path="/notes/new" element={<NewNotePage />} />
+                <Route path="/notes/:id" element={<NoteDetailPage />} />
+                <Route path="/debug" element={<AuthDebug />} />
+                <Route path="/auth-test" element={<AuthTest />} />
+              </Routes>
+            </Router>
+          </NotesProvider>
         </MemoProvider>
       </AuthProvider>
     </Auth0Provider>

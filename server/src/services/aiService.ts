@@ -115,12 +115,109 @@ Web Content: ${content.content.substring(0, 8000)}`;
     }
   }
 
+  async summarizeNoteContent(content: string): Promise<{ summary: string; oneLineSummary: string; keyPoints: string[] }> {
+    try {
+      // 清理 HTML 内容，提取纯文本
+      const textContent = this.extractTextFromHtml(content);
+      
+      const prompt = `Please analyze the following note content and provide:
+
+1. A comprehensive summary (2-3 paragraphs)
+2. A one-line summary (1 sentence)
+3. Key points (3-5 bullet points)
+
+Note content:
+${textContent}
+
+Please respond in JSON format:
+{
+  "summary": "comprehensive summary here",
+  "oneLineSummary": "one line summary here",
+  "keyPoints": ["key point 1", "key point 2", "key point 3"]
+}`;
+
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 1000
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No response from OpenAI');
+      }
+
+      try {
+        const result = JSON.parse(content);
+        return {
+          summary: result.summary || 'No summary available',
+          oneLineSummary: result.oneLineSummary || 'No summary available',
+          keyPoints: result.keyPoints || []
+        };
+      } catch (parseError) {
+        // 如果 JSON 解析失败，尝试提取信息
+        return {
+          summary: content,
+          oneLineSummary: content.split('.')[0] + '.',
+          keyPoints: content.split('\n').filter(line => line.trim().startsWith('-')).map(line => line.replace(/^-\s*/, ''))
+        };
+      }
+    } catch (error) {
+      console.error('Error summarizing note content:', error);
+      throw error;
+    }
+  }
+
+  async chatWithNote(noteId: string, message: string, noteContent: string): Promise<string> {
+    try {
+      const textContent = this.extractTextFromHtml(noteContent);
+      
+      const prompt = `You are an AI assistant helping with a note. The user can ask questions about the note content or request operations on the note.
+
+Note content:
+${textContent}
+
+User message: ${message}
+
+Please provide a helpful response. If the user asks to modify the note, explain what changes you would make but note that you cannot directly edit the note - the user would need to make those changes manually.
+
+Respond in a conversational, helpful manner.`;
+
+      const response = await this.openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        max_tokens: 500
+      });
+
+      return response.choices[0]?.message?.content || 'I apologize, but I could not generate a response.';
+    } catch (error) {
+      console.error('Error in note chat:', error);
+      throw error;
+    }
+  }
+
+  private extractTextFromHtml(html: string): string {
+    // 简单的 HTML 标签移除
+    return html
+      .replace(/<[^>]*>/g, '') // 移除所有 HTML 标签
+      .replace(/&nbsp;/g, ' ') // 替换 &nbsp;
+      .replace(/&amp;/g, '&') // 替换 &amp;
+      .replace(/&lt;/g, '<') // 替换 &lt;
+      .replace(/&gt;/g, '>') // 替换 &gt;
+      .replace(/&quot;/g, '"') // 替换 &quot;
+      .replace(/\s+/g, ' ') // 合并多个空格
+      .trim();
+  }
+
   async summarizeYouTubeContent(content: YouTubeContent, memoId?: string): Promise<{ summary: string; oneLineSummary: string; keyPoints: string[] }> {
-    const model = process.env.OPENAI_MODEL_SUMMARY || 'gpt-4o';
-    const summaryTemperature = process.env.OPENAI_TEMPERATURE_SUMMARY
-      ? parseFloat(process.env.OPENAI_TEMPERATURE_SUMMARY)
-      : (process.env.OPENAI_TEMPERATURE ? parseFloat(process.env.OPENAI_TEMPERATURE) : 0.3);
-    const summaryPrompt = `Please generate a comprehensive English summary for the following YouTube video transcript with these requirements:
+    try {
+      const model = process.env.OPENAI_MODEL_SUMMARY || 'gpt-4o';
+      const summaryTemperature = process.env.OPENAI_TEMPERATURE_SUMMARY
+        ? parseFloat(process.env.OPENAI_TEMPERATURE_SUMMARY)
+        : (process.env.OPENAI_TEMPERATURE ? parseFloat(process.env.OPENAI_TEMPERATURE) : 0.3);
+      const summaryPrompt = `Please generate a comprehensive English summary for the following YouTube video transcript with these requirements:
 1. Keep the summary between 200-300 words
 2. Highlight the main points and key content
 3. Use clear and structured language
