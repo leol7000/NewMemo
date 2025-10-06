@@ -143,7 +143,7 @@ const NotesListPage: React.FC = () => {
                   {note.keyPoints && note.keyPoints.length > 0 && (
                     <div className="mb-4">
                       <ul className="text-sm text-gray-600 space-y-1">
-                        {note.keyPoints.slice(0, 3).map((point, index) => (
+                        {note.keyPoints.slice(0, 3).map((point: string, index: number) => (
                           <li key={index} className="flex items-start">
                             <span className="text-blue-500 mr-2">•</span>
                             <span className="line-clamp-1">{point}</span>

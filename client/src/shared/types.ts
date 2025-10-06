@@ -146,3 +146,53 @@ export interface GenerateLanguageResponse {
   };
   error?: string;
 }
+
+// Note 相关类型定义
+export interface Note {
+  id: string;
+  title: string;
+  content: string; // HTML content from rich text editor
+  summary?: string;
+  oneLineSummary?: string;
+  keyPoints?: string[];
+  status: 'draft' | 'completed';
+  createdAt: string;
+  updatedAt: string;
+  userId?: string;
+}
+
+export interface NoteCard {
+  id: string;
+  title: string;
+  summary?: string;
+  oneLineSummary?: string;
+  keyPoints?: string[];
+  status: 'draft' | 'completed';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateNoteRequest {
+  title: string;
+  content: string;
+}
+
+export interface UpdateNoteRequest {
+  title?: string;
+  content?: string;
+  summary?: string;
+  oneLineSummary?: string;
+  keyPoints?: string[];
+  status?: 'draft' | 'completed';
+}
+
+export interface NoteChatRequest {
+  noteId: string;
+  message: string;
+}
+
+export interface NoteChatResponse {
+  success: boolean;
+  data: ChatMessage[];
+  error?: string;
+}
