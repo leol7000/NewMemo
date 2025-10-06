@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { MemoCard, ChatMessage, SummarizeRequest, ChatRequest, Collection, CollectionMemo, CreateCollectionRequest, AddMemoToCollectionRequest, GenerateLanguageResponse, Language } from '../shared/types';
 
-const API_BASE_URL = '/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 // 获取认证 token
 const getAuthToken = () => {
