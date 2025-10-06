@@ -239,7 +239,7 @@ export class SupabaseDatabase {
         .from('memo_collections')
         .select(`
           *,
-          memos:memo_id(*)
+          memo:memos(*)
         `)
         .eq('collection_id', collectionId);
 
