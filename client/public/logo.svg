@@ -1,0 +1,60 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 液态水滴渐变 -->
+    <linearGradient id="liquidGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#007AFF;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#5AC8FA;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#34C759;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#30D158;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 高光渐变 -->
+    <linearGradient id="highlightGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#FFFFFF;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#FFFFFF;stop-opacity:0" />
+    </linearGradient>
+    
+    <!-- 阴影滤镜 -->
+    <filter id="liquidShadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+      <feOffset dx="0" dy="4" result="offset"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge> 
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/> 
+      </feMerge>
+    </filter>
+    
+    <!-- 液态波纹效果 -->
+    <filter id="liquidRipple" x="-50%" y="-50%" width="200%" height="200%">
+      <feTurbulence baseFrequency="0.02" numOctaves="3" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2"/>
+    </filter>
+  </defs>
+  
+  <!-- 背景圆形 -->
+  <circle cx="32" cy="32" r="30" fill="url(#liquidGradient)" filter="url(#liquidShadow)"/>
+  
+  <!-- 液态水滴形状 -->
+  <path d="M20 18 L32 8 L44 18 L40 24 L36 20 L32 24 L28 20 L24 24 Z" 
+        fill="url(#liquidGradient)" 
+        filter="url(#liquidRipple)"
+        opacity="0.9"/>
+  
+  <!-- M字母主体 -->
+  <path d="M18 40 L18 50 L22 50 L22 44 L26 48 L30 44 L30 50 L34 50 L34 40 L30 40 L30 46 L26 42 L22 46 L22 40 Z" 
+        fill="white" 
+        opacity="0.95"/>
+  
+  <!-- 高光效果 -->
+  <ellipse cx="25" cy="20" rx="8" ry="4" fill="url(#highlightGradient)" opacity="0.6"/>
+  
+  <!-- 液态水滴高光 -->
+  <path d="M22 16 L28 12 L32 16 L30 18 L26 16 Z" fill="white" opacity="0.4"/>
+  
+  <!-- 底部反射 -->
+  <ellipse cx="32" cy="58" rx="20" ry="6" fill="url(#liquidGradient)" opacity="0.2"/>
+</svg>
