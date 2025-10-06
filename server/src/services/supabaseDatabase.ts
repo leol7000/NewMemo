@@ -206,6 +206,33 @@ export class SupabaseDatabase {
     }
   }
 
+  async getCollection(id: string): Promise<Collection | null> {
+    try {
+      const { data, error } = await supabase
+        .from('collections')
+        .select(`
+          *,
+          memos:memo_collections(count)
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No rows returned
+          return null;
+        }
+        console.error('Error fetching collection:', error);
+        throw error;
+      }
+
+      return data ? this.mapCollectionResult(data) : null;
+    } catch (error) {
+      console.error('getCollection error:', error);
+      throw error;
+    }
+  }
+
   async createCollection(collection: Omit<Collection, 'createdAt' | 'updatedAt' | 'memo_count'>, userId?: string): Promise<Collection> {
     try {
       const collectionData = {
