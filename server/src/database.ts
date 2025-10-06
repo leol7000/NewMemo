@@ -166,7 +166,7 @@ export class Database {
     }
   }
 
-  async createMemo(memo: Omit<MemoCard, 'createdAt' | 'updatedAt'>): Promise<MemoCard> {
+  async createMemo(memo: Omit<MemoCard, 'createdAt' | 'updatedAt'>, userId?: string): Promise<MemoCard> {
     const run = promisify(this.db.run.bind(this.db));
     const get = promisify(this.db.get.bind(this.db));
     
@@ -184,23 +184,23 @@ export class Database {
     const keyPointsTh = memo.keyPointsTh ? JSON.stringify(memo.keyPointsTh) : null;
     
     await run(
-      'INSERT INTO memos (id, url, title, summary, type, cover_image, one_line_summary, key_points, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [memo.id, memo.url, memo.title, memo.summary, memo.type, memo.coverImage || null, memo.oneLineSummary || null, keyPoints, metadata, now, now]
+      'INSERT INTO memos (id, url, title, summary, type, cover_image, one_line_summary, key_points, metadata, user_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [memo.id, memo.url, memo.title, memo.summary, memo.type, memo.coverImage || null, memo.oneLineSummary || null, keyPoints, metadata, userId || null, now, now]
     );
 
     const result = await get('SELECT * FROM memos WHERE id = ?', [memo.id]) as any;
     return this.mapMemoResult(result);
   }
 
-  async createEmptyMemo(memo: { id: string; url: string; type: string; status: string }): Promise<MemoCard> {
+  async createEmptyMemo(memo: { id: string; url: string; type: string; status: string }, userId?: string): Promise<MemoCard> {
     const run = promisify(this.db.run.bind(this.db));
     const get = promisify(this.db.get.bind(this.db));
     
     const now = new Date().toISOString();
     
     await run(
-      'INSERT INTO memos (id, url, title, summary, type, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [memo.id, memo.url, 'Processing...', 'Processing content...', memo.type, memo.status, now, now]
+      'INSERT INTO memos (id, url, title, summary, type, status, user_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [memo.id, memo.url, 'Processing...', 'Processing content...', memo.type, memo.status, userId || null, now, now]
     );
 
     const result = await get('SELECT * FROM memos WHERE id = ?', [memo.id]) as any;
@@ -256,9 +256,20 @@ export class Database {
     return this.mapMemoResult(result);
   }
 
-  async getAllMemos(): Promise<MemoCard[]> {
+  async getAllMemos(userId?: string): Promise<MemoCard[]> {
     const all = promisify(this.db.all.bind(this.db));
-    const results = await all('SELECT * FROM memos ORDER BY created_at DESC') as any[];
+    
+    let query = 'SELECT * FROM memos';
+    let params: any[] = [];
+    
+    if (userId) {
+      query += ' WHERE user_id = ?';
+      params.push(userId);
+    }
+    
+    query += ' ORDER BY created_at DESC';
+    
+    const results = await all(query, params) as any[];
     
     return results.map(result => this.mapMemoResult(result));
   }
@@ -274,7 +285,10 @@ export class Database {
     
     // 处理所有可能的更新字段
     const fieldMappings = {
+      title: 'title',
       summary: 'summary',
+      status: 'status',
+      coverImage: 'cover_image',
       oneLineSummary: 'one_line_summary',
       keyPoints: 'key_points',
       summaryZh: 'summary_zh',

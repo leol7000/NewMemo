@@ -3,10 +3,43 @@ import { MemoCard, ChatMessage, SummarizeRequest, ChatRequest, Collection, Colle
 
 const API_BASE_URL = '/api';
 
+// 获取认证 token
+const getAuthToken = () => {
+  // 这里可以从 Auth0 或其他认证服务获取 token
+  return localStorage.getItem('auth_token');
+};
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000, // 10秒超时
 });
+
+// 请求拦截器 - 添加认证 token
+api.interceptors.request.use(
+  (config) => {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 响应拦截器 - 处理认证错误
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // 处理认证失败 - 不自动重定向，让Auth0处理
+      localStorage.removeItem('auth_token');
+      console.log('Authentication failed, token cleared');
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const memoApi = {
   // 获取所有备忘录
@@ -61,6 +94,30 @@ export const memoApi = {
     const response = await api.get(`/chat/${memoId}`);
     return response.data.data;
   },
+};
+
+// 认证相关 API
+export const authApi = {
+  // 获取用户信息
+  getProfile: async () => {
+    const response = await api.get('/auth/profile');
+    return response.data;
+  },
+  
+  // 设置认证 token
+  setAuthToken: (token: string) => {
+    localStorage.setItem('auth_token', token);
+  },
+  
+  // 清除认证 token
+  clearAuthToken: () => {
+    localStorage.removeItem('auth_token');
+  },
+  
+  // 检查是否已认证
+  isAuthenticated: () => {
+    return !!localStorage.getItem('auth_token');
+  }
 };
 
 export const collectionApi = {

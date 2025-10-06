@@ -101,10 +101,12 @@ export interface YouTubeContent {
   title: string;
   transcript: string;
   url: string;
+  coverImage?: string;
   metadata?: {
     duration?: string;
     thumbnail?: string;
     channel?: string;
+    transcriptLanguage?: string;
   };
 }
 

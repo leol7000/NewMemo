@@ -12,14 +12,36 @@ interface MemoCardProps {
 const MemoCardComponent: React.FC<MemoCardProps> = ({ memo }) => {
   const { deleteMemo } = useMemos();
   const [isDeleting, setIsDeleting] = React.useState(false);
+  const [processingTime, setProcessingTime] = React.useState<number | null>(null);
+
+  // 计算处理时间
+  React.useEffect(() => {
+    if (memo.status === 'processing') {
+      const startTime = new Date(memo.createdAt).getTime();
+      const interval = setInterval(() => {
+        const currentTime = Date.now();
+        const elapsed = Math.floor((currentTime - startTime) / 1000);
+        setProcessingTime(elapsed);
+      }, 1000);
+      
+      return () => clearInterval(interval);
+    } else {
+      setProcessingTime(null);
+    }
+  }, [memo.status, memo.createdAt]);
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this memo?')) {
+      console.log('Starting delete for memo:', memo.id);
       setIsDeleting(true);
       try {
         await deleteMemo(memo.id);
+        console.log('Delete completed for memo:', memo.id);
+        // 删除成功后，组件会被从列表中移除，所以不需要手动设置 isDeleting
       } catch (error) {
+        console.error('Failed to delete memo:', error);
         setIsDeleting(false);
+        alert('Failed to delete memo. Please try again.');
       }
     }
   };
@@ -54,19 +76,19 @@ const MemoCardComponent: React.FC<MemoCardProps> = ({ memo }) => {
           {memo.status === 'processing' && (
             <div className="flex items-center mt-2 text-amber-600 text-sm">
               <ClockIcon className="h-4 w-4 mr-1 animate-spin" />
-              <span>Summarizing...</span>
+              <span>Summarizing... {processingTime !== null && `(${processingTime}s)`}</span>
             </div>
           )}
           {memo.status === 'failed' && (
             <div className="flex items-center mt-2 text-red-600 text-sm">
               <ExclamationTriangleIcon className="h-4 w-4 mr-1" />
-              <span>Failed to process</span>
+              <span>{memo.summary.includes('No subtitles available') ? 'No subtitles available' : 'Failed to process'}</span>
             </div>
           )}
         </div>
         <button
           onClick={handleDelete}
-          disabled={isDeleting || memo.status === 'processing'}
+          disabled={isDeleting}
           className="text-red-500 hover:text-red-700 transition-colors ml-2 disabled:opacity-50"
         >
           <TrashIcon className="h-5 w-5" />
@@ -93,23 +115,13 @@ const MemoCardComponent: React.FC<MemoCardProps> = ({ memo }) => {
       <div className="flex gap-2">
         <Link
           to={`/memo/${memo.id}`}
-          className={`flex-1 font-medium py-2 px-4 rounded-lg transition-colors text-center ${
-            memo.status === 'processing' 
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-              : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-          }`}
-          onClick={(e) => memo.status === 'processing' && e.preventDefault()}
+          className="flex-1 font-medium py-2 px-4 rounded-lg transition-colors text-center bg-gray-100 hover:bg-gray-200 text-gray-700"
         >
-          {memo.status === 'processing' ? 'Processing...' : 'View Details'}
+          {memo.status === 'processing' ? 'View Details (Processing...)' : 'View Details'}
         </Link>
         <Link
           to={`/memo/${memo.id}?chat=true`}
-          className={`p-2 rounded-lg transition-colors ${
-            memo.status === 'processing' 
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-              : 'bg-blue-100 hover:bg-blue-200 text-blue-700'
-          }`}
-          onClick={(e) => memo.status === 'processing' && e.preventDefault()}
+          className="p-2 rounded-lg transition-colors bg-blue-100 hover:bg-blue-200 text-blue-700"
         >
           <ChatBubbleOvalLeftEllipsisIcon className="h-5 w-5" />
         </Link>

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DocumentTextIcon, SparklesIcon, ChatBubbleOvalLeftEllipsisIcon, FolderIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { DocumentTextIcon, SparklesIcon, ChatBubbleOvalLeftEllipsisIcon, FolderIcon, PlusIcon, UserIcon } from '@heroicons/react/24/outline';
 import { Collection } from '../shared/types';
 import { collectionApi } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated, isLoading, login, logout } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -26,6 +28,48 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Header with Auth */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <img src="/mymemo-icon.svg" alt="Mymemo AI 3.0" className="h-8 w-8" />
+            <span className="text-xl font-semibold text-gray-900">Mymemo AI 3.0</span>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            ) : isAuthenticated && user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  {user.picture ? (
+                    <img src={user.picture} alt={user.name} className="h-8 w-8 rounded-full" />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                      <UserIcon className="h-5 w-5 text-gray-600" />
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-gray-700">{user.name}</span>
+                </div>
+                <button
+                  onClick={logout}
+                  className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={login}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+              >
+                Login
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-4xl mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
@@ -61,81 +105,92 @@ const HomePage: React.FC = () => {
 
         {/* Main Action Button */}
         <div className="text-center mb-16">
-          <button
-            onClick={() => navigate('/memos')}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg text-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-          >
-            View My Memos
-          </button>
-          
-          <p className="text-gray-500 mt-4">
-            Start managing your AI-powered content summaries
-          </p>
-        </div>
-
-        {/* Collections Section */}
-        <div className="mb-20">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">My Collections</h2>
-            <button
-              onClick={() => navigate('/collections')}
-              className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-            >
-              <PlusIcon className="h-5 w-5" />
-              Create Collection
-            </button>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Loading collections...</p>
-            </div>
-          ) : collections.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow-md">
-              <FolderIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No collections yet</h3>
-              <p className="text-gray-600 mb-6">Create your first collection to organize your memos</p>
+          {isAuthenticated ? (
+            <>
               <button
-                onClick={() => navigate('/collections')}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+                onClick={() => navigate('/memos')}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-lg text-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
               >
-                Create Collection
+                View My Memos
               </button>
-            </div>
+              <p className="text-gray-500 mt-4">
+                Welcome back, {user?.name}! Manage your AI-powered content summaries
+              </p>
+            </>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {collections.map((collection) => (
-                <div
-                  key={collection.id}
-                  onClick={() => navigate(`/collections/${collection.id}`)}
-                  className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:scale-105"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div 
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: collection.color || '#3B82F6' }}
-                    ></div>
-                    <h3 className="text-lg font-semibold text-gray-900">{collection.name}</h3>
-                  </div>
-                  
-                  {collection.description && (
-                    <p className="text-gray-600 text-sm mb-4">{collection.description}</p>
-                  )}
-                  
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">
-                      {collection.memo_count} {collection.memo_count === 1 ? 'memo' : 'memos'}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {new Date(collection.createdAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                </div>
-              ))}
+            <div className="text-center">
+              <p className="text-gray-500 mb-6">
+                Please sign in using the login button in the top right corner to start managing your AI-powered content summaries
+              </p>
             </div>
           )}
         </div>
+
+        {/* Collections Section */}
+        {isAuthenticated && (
+          <div className="mb-20">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-3xl font-bold text-gray-900">My Collections</h2>
+              <button
+                onClick={() => navigate('/collections')}
+                className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 font-medium py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+              >
+                <PlusIcon className="h-5 w-5" />
+                Create Collection
+              </button>
+            </div>
+
+            {loading ? (
+              <div className="text-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading collections...</p>
+              </div>
+            ) : collections.length === 0 ? (
+              <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                <FolderIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">No collections yet</h3>
+                <p className="text-gray-600 mb-6">Create your first collection to organize your memos</p>
+                <button
+                  onClick={() => navigate('/collections')}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition-colors"
+                >
+                  Create Collection
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {collections.map((collection) => (
+                  <div
+                    key={collection.id}
+                    onClick={() => navigate(`/collections/${collection.id}`)}
+                    className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:scale-105"
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div 
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: collection.color || '#3B82F6' }}
+                      ></div>
+                      <h3 className="text-lg font-semibold text-gray-900">{collection.name}</h3>
+                    </div>
+                    
+                    {collection.description && (
+                      <p className="text-gray-600 text-sm mb-4">{collection.description}</p>
+                    )}
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-500">
+                        {collection.memo_count} {collection.memo_count === 1 ? 'memo' : 'memos'}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        {new Date(collection.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Features Section */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

@@ -1,0 +1,14 @@
+name = "mymemo-api"
+main = "src/index.js"
+compatibility_date = "2023-10-30"
+
+[vars]
+ENVIRONMENT = "production"
+RAILWAY_BACKEND_URL = "https://your-app.railway.app"
+AUTH0_DOMAIN = "dev-supk23n0xgucx0no.us.auth0.com"
+AUTH0_AUDIENCE = "https://dev-supk23n0xgucx0no.us.auth0.com/api/v2/"
+
+# 路由配置
+[[routes]]
+pattern = "api.your-domain.com/*"
+custom_domain = true

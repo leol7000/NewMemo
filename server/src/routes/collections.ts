@@ -1,10 +1,11 @@
 import express from 'express';
-import { Database } from '../database';
+import { SupabaseDatabase } from '../services/supabaseDatabase';
 import { AIService } from '../services/aiService';
+import { optionalAuth } from '../middleware/auth';
 import { CreateCollectionRequest, AddMemoToCollectionRequest, ChatRequest, ChatResponse } from '../../shared/types';
 
 const router = express.Router();
-const db = new Database();
+const db = new SupabaseDatabase();
 const aiService = new AIService();
 
 // 初始化数据库

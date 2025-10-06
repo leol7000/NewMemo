@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { AIService } from '../services/aiService';
-import { Database } from '../database';
+import { SupabaseDatabase } from '../services/supabaseDatabase';
+import { optionalAuth } from '../middleware/auth';
 import { ChatRequest, ChatResponse } from '../../shared/types';
 
 const router = Router();
 const aiService = new AIService();
-const db = new Database();
+const db = new SupabaseDatabase();
 
 // 初始化数据库
 db.init().catch(console.error);

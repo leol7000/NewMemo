@@ -115,7 +115,7 @@ Web Content: ${content.content.substring(0, 8000)}`;
     }
   }
 
-  async summarizeYouTubeContent(content: YouTubeContent): Promise<{ summary: string; oneLineSummary: string; keyPoints: string[] }> {
+  async summarizeYouTubeContent(content: YouTubeContent, memoId?: string): Promise<{ summary: string; oneLineSummary: string; keyPoints: string[] }> {
     const model = process.env.OPENAI_MODEL_SUMMARY || 'gpt-4o';
     const summaryTemperature = process.env.OPENAI_TEMPERATURE_SUMMARY
       ? parseFloat(process.env.OPENAI_TEMPERATURE_SUMMARY)

@@ -1,19 +1,50 @@
 import { Router } from 'express';
-import { Database } from '../database';
+import { SupabaseDatabase } from '../services/supabaseDatabase';
 import { AIService } from '../services/aiService';
+import { optionalAuth } from '../middleware/auth';
 import { GenerateLanguageRequest, GenerateLanguageResponse } from '../../shared/types';
 
 const router = Router();
-const db = new Database();
+const db = new SupabaseDatabase();
 const aiService = new AIService();
 
 // 初始化数据库
 db.init().catch(console.error);
 
-// 获取所有备忘录
-router.get('/', async (req, res) => {
+// 测试认证端点
+router.get('/test-auth', async (req: any, res) => {
   try {
-    const memos = await db.getAllMemos();
+    const userId = req.user?.sub;
+    res.json({
+      success: true,
+      message: 'Authentication working',
+      userId: userId,
+      user: req.user
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// 获取所有备忘录 - 临时禁用认证
+router.get('/', async (req: any, res) => {
+  try {
+    const userId = req.user?.sub;
+    console.log('Getting memos for user:', userId);
+    
+    // 如果没有用户ID，返回空数组
+    if (!userId) {
+      console.log('No user ID provided, returning empty array');
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
+    
+    const memos = await db.getAllMemos(userId);
     res.json({
       success: true,
       data: memos
@@ -31,7 +62,9 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const memo = await db.getMemo(id);
+    // 暂时通过getAllMemos获取单个memo
+    const memos = await db.getAllMemos();
+    const memo = memos.find(m => m.id === id);
     
     if (!memo) {
       return res.status(404).json({
@@ -102,7 +135,8 @@ router.post('/:id/generate-language', async (req, res) => {
       } as GenerateLanguageResponse);
     }
     
-    const memo = await db.getMemo(id);
+    const memos = await db.getAllMemos();
+    const memo = memos.find(m => m.id === id);
     if (!memo) {
       return res.status(404).json({
         success: false,
