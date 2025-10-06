@@ -233,6 +233,72 @@ export class SupabaseDatabase {
     }
   }
 
+  async getCollectionMemos(collectionId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('memo_collections')
+        .select(`
+          *,
+          memos:memo_id(*)
+        `)
+        .eq('collection_id', collectionId);
+
+      if (error) {
+        console.error('Error fetching collection memos:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('getCollectionMemos error:', error);
+      throw error;
+    }
+  }
+
+  async addMemoToCollection(collectionId: string, memoId: string): Promise<any> {
+    try {
+      const id = `mc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const { data, error } = await supabase
+        .from('memo_collections')
+        .insert([{
+          id,
+          collection_id: collectionId,
+          memo_id: memoId,
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding memo to collection:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('addMemoToCollection error:', error);
+      throw error;
+    }
+  }
+
+  async removeMemoFromCollection(collectionId: string, memoId: string): Promise<void> {
+    try {
+      const { error } = await supabase
+        .from('memo_collections')
+        .delete()
+        .eq('collection_id', collectionId)
+        .eq('memo_id', memoId);
+
+      if (error) {
+        console.error('Error removing memo from collection:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('removeMemoFromCollection error:', error);
+      throw error;
+    }
+  }
+
   async createCollection(collection: Omit<Collection, 'createdAt' | 'updatedAt' | 'memo_count'>, userId?: string): Promise<Collection> {
     try {
       const collectionData = {
