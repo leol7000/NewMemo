@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { MemoCard, ChatMessage, SummarizeRequest, ChatRequest, Collection, CollectionMemo, CreateCollectionRequest, AddMemoToCollectionRequest, GenerateLanguageRequest, GenerateLanguageResponse, Language } from '../shared/types';
+import { MemoCard, ChatMessage, SummarizeRequest, ChatRequest, Collection, CollectionMemo, CreateCollectionRequest, AddMemoToCollectionRequest, GenerateLanguageResponse, Language } from '../shared/types';
 
 const API_BASE_URL = '/api';
 

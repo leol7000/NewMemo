@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeftIcon, PaperAirplaneIcon, LinkIcon, PencilIcon, CheckIcon, XMarkIcon, LanguageIcon } from '@heroicons/react/24/outline';
 import { format } from 'date-fns';
@@ -45,7 +45,7 @@ const MemoDetailPage: React.FC = () => {
     if (id) {
       loadMemoAndMessages();
     }
-  }, [id]);
+  }, [id, loadMemoAndMessages]);
 
   useEffect(() => {
     scrollToBottom();
@@ -57,7 +57,7 @@ const MemoDetailPage: React.FC = () => {
     }
   };
 
-  const loadMemoAndMessages = async () => {
+  const loadMemoAndMessages = useCallback(async () => {
     if (!id) return;
 
     try {
@@ -73,7 +73,7 @@ const MemoDetailPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

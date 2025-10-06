@@ -6,7 +6,7 @@ import { ArrowLeftIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { useNavigate } from 'react-router-dom';
 
 const MemoListPage: React.FC = () => {
-  const { state, clearError, loadMemos } = useMemos();
+  const { state, loadMemos } = useMemos();
   const navigate = useNavigate();
 
   return (

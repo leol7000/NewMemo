@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeftIcon, PlusIcon, TrashIcon, ChatBubbleOvalLeftEllipsisIcon, PaperAirplaneIcon } from '@heroicons/react/24/outline';
 import { Collection, CollectionMemo, MemoCard, ChatMessage } from '../shared/types';
@@ -22,13 +22,13 @@ const CollectionDetailPage: React.FC = () => {
     if (id) {
       loadCollectionData();
     }
-  }, [id]);
+  }, [id, loadCollectionData]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const loadCollectionData = async () => {
+  const loadCollectionData = useCallback(async () => {
     if (!id) return;
     
     try {
@@ -49,7 +49,7 @@ const CollectionDetailPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
   const handleAddMemoToCollection = async (memoId: string) => {
     if (!id) return;
