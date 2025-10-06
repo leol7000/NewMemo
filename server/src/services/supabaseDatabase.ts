@@ -289,6 +289,55 @@ export class SupabaseDatabase {
     }
   }
 
+  // Chat operations
+  async getChatMessages(memoId: string): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('memo_id', memoId)
+        .order('created_at', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching chat messages:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (error) {
+      console.error('getChatMessages error:', error);
+      throw error;
+    }
+  }
+
+  async createChatMessage(message: { id: string; memoId: string; role: string; content: string }): Promise<any> {
+    try {
+      const messageData = {
+        id: message.id,
+        memo_id: message.memoId,
+        role: message.role,
+        content: message.content,
+        created_at: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .insert([messageData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating chat message:', error);
+        throw error;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('createChatMessage error:', error);
+      throw error;
+    }
+  }
+
   // Helper methods
   private mapMemoResult(result: any): MemoCard {
     return {
