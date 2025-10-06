@@ -41,22 +41,6 @@ const MemoDetailPage: React.FC = () => {
     'th': { name: 'ไทย', flag: '🇹🇭', generatingText: 'กำลังสร้างสรุปภาษาไทย...' }
   };
 
-  useEffect(() => {
-    if (id) {
-      loadMemoAndMessages();
-    }
-  }, [id, loadMemoAndMessages]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  };
-
   const loadMemoAndMessages = useCallback(async () => {
     if (!id) return;
 
@@ -74,6 +58,22 @@ const MemoDetailPage: React.FC = () => {
       setIsLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      loadMemoAndMessages();
+    }
+  }, [id, loadMemoAndMessages]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();

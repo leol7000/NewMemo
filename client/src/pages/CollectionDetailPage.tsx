@@ -18,16 +18,6 @@ const CollectionDetailPage: React.FC = () => {
   const [isSending, setIsSending] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (id) {
-      loadCollectionData();
-    }
-  }, [id, loadCollectionData]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
   const loadCollectionData = useCallback(async () => {
     if (!id) return;
     
@@ -50,6 +40,16 @@ const CollectionDetailPage: React.FC = () => {
       setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      loadCollectionData();
+    }
+  }, [id, loadCollectionData]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const handleAddMemoToCollection = async (memoId: string) => {
     if (!id) return;
