@@ -3,17 +3,22 @@ FROM node:18-alpine
 
 WORKDIR /app
 
+# Install system dependencies
+RUN apk add --no-cache python3 py3-pip ffmpeg
+
+# Install yt-dlp
+RUN pip3 install yt-dlp
+
 # Copy package files
 COPY server/package*.json ./
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy source code
 COPY server/src ./src
 COPY shared ./shared
 
-# Install yt-dlp
-RUN apk add --no-cache python3 py3-pip
-RUN pip3 install yt-dlp
+# Build TypeScript
+RUN npm run build
 
 # Set environment variables
 ENV NODE_ENV=production
