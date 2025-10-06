@@ -1,4 +1,4 @@
-# Railway deployment configuration
+# Railway deployment configuration - Optimized for faster builds
 FROM node:18-alpine
 
 WORKDIR /app
@@ -10,9 +10,14 @@ RUN apk add --no-cache python3 py3-pip ffmpeg curl
 RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp
 
-# Copy package files
+# Copy package files first for better caching
 COPY server/package*.json ./
-RUN npm ci
+
+# Install dependencies with timeout and retry
+RUN npm config set fetch-timeout 300000 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm ci --only=production
 
 # Copy source code
 COPY server/src ./src
