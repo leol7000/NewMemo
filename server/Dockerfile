@@ -4,10 +4,11 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Install system dependencies
-RUN apk add --no-cache python3 py3-pip ffmpeg
+RUN apk add --no-cache python3 py3-pip ffmpeg curl
 
-# Install yt-dlp
-RUN pip3 install yt-dlp
+# Install yt-dlp using curl (more reliable)
+RUN curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
+    chmod a+rx /usr/local/bin/yt-dlp
 
 # Copy package files
 COPY server/package*.json ./
