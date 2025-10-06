@@ -133,3 +133,4 @@ flymemo/
 4. 建议使用现代浏览器以获得最佳体验
 # Trigger rebuild
 # Trigger rebuild with npm install fix
+# Trigger rebuild again
