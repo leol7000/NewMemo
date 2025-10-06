@@ -62,9 +62,7 @@ router.get('/', async (req: any, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    // 暂时通过getAllMemos获取单个memo
-    const memos = await db.getAllMemos();
-    const memo = memos.find(m => m.id === id);
+    const memo = await db.getMemo(id);
     
     if (!memo) {
       return res.status(404).json({
