@@ -1,20 +1,13 @@
 {
-  "name": "flymemo",
+  "name": "newmemo",
   "version": "1.0.0",
-  "description": "AI-powered web content summarization tool",
-  "main": "index.js",
+  "description": "NewMemo - AI-powered memo application",
   "scripts": {
-    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
-    "server:dev": "cd server && npm run dev",
-    "client:dev": "cd client && npm run dev",
-    "build": "cd client && npm run build",
+    "build": "cd server && npm run build",
     "start": "cd server && npm start",
-    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+    "install": "cd server && npm install"
   },
-  "keywords": ["ai", "summarization", "web", "youtube", "memo"],
-  "author": "Leo",
-  "license": "MIT",
-  "devDependencies": {
-    "concurrently": "^8.2.2"
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
