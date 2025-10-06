@@ -1,92 +1,16 @@
-import puppeteer from 'puppeteer';
 import * as cheerio from 'cheerio';
 import { WebContent } from '../../shared/types';
 
 export class WebScraper {
-  private browser: puppeteer.Browser | null = null;
-
-  async init(): Promise<void> {
-    this.browser = await puppeteer.launch({
-      headless: 'new',
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--disable-gpu'
-      ]
-    });
-  }
+  // Temporarily disable puppeteer for Railway deployment
+  // private browser: puppeteer.Browser | null = null;
 
   async scrape(url: string): Promise<WebContent> {
     try {
-      if (!this.browser) {
-        await this.init();
-      }
-
-      const page = await this.browser!.newPage();
-      
-      try {
-        // 设置用户代理
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
-        
-        // 访问页面
-        await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-        
-        // 获取页面内容
-        const content = await page.content();
-        const $ = cheerio.load(content);
-        
-        // 提取标题
-        let title = $('title').text() || 
-                    $('h1').first().text() || 
-                    $('meta[property="og:title"]').attr('content') ||
-                    'Untitled';
-        
-        // 清理标题
-        title = title.trim().replace(/\s+/g, ' ');
-        
-        // 移除不需要的元素
-        $('script, style, nav, header, footer, aside, .advertisement, .ads, .sidebar').remove();
-        
-        // 提取主要内容
-        const mainContent = this.extractMainContent($);
-        
-        // 提取封面图片
-        const coverImage = this.extractCoverImage($, url);
-        
-        // 提取元数据
-        const metadata = {
-          author: $('meta[name="author"]').attr('content') || 
-                  $('[rel="author"]').text() ||
-                  $('.author').first().text(),
-          publishedDate: $('meta[property="article:published_time"]').attr('content') ||
-                        $('time[datetime]').attr('datetime') ||
-                        $('.published-date').first().text(),
-          description: $('meta[name="description"]').attr('content') ||
-                      $('meta[property="og:description"]').attr('content')
-        };
-
-        await page.close();
-        
-        return {
-          title,
-          content: mainContent,
-          url,
-          coverImage,
-          metadata: Object.values(metadata).some(v => v) ? metadata : undefined
-        };
-        
-      } catch (error) {
-        await page.close();
-        throw new Error(`Failed to scrape ${url}: ${error}`);
-      }
+      // Use fallback method for now to avoid puppeteer dependency issues
+      return await this.fallbackScrape(url);
     } catch (error) {
-      // 如果Puppeteer失败，尝试简单的fetch方法
-      console.warn('Puppeteer failed, trying fetch method:', error);
-      return this.fallbackScrape(url);
+      throw new Error(`Failed to scrape ${url}: ${error}`);
     }
   }
 
@@ -253,9 +177,7 @@ export class WebScraper {
   }
 
   async close(): Promise<void> {
-    if (this.browser) {
-      await this.browser.close();
-      this.browser = null;
-    }
+    // No browser to close since we're using fallback method
+    return;
   }
 }

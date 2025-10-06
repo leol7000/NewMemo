@@ -22,7 +22,6 @@
     "jsonwebtoken": "^9.0.2",
     "jwks-client": "^2.1.0",
     "openai": "^4.20.1",
-    "puppeteer": "^21.5.2",
     "sqlite3": "^5.1.6",
     "url-parse": "^1.5.10",
     "uuid": "^9.0.1",
